@@ -1,11 +1,49 @@
+import type {NextPage} from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
 import { Inter } from 'next/font/google'
 import styles from '@/styles/Home.module.css'
+import {apiClient, apiServer} from "../utils/apiClient";
+import { TestItem, TestItemResponse } from "../types/TestItem";
+import { useEffect } from 'react';
 
 const inter = Inter({ subsets: ['latin'] })
 
-export default function Home() {
+interface Props {
+  data: TestItem
+}
+export async function getData() {
+  await apiClient.get<TestItemResponse>('test')
+      .then((res) => {
+        console.log(res)
+      }).catch(err => {
+        console.error(err)
+      })
+}
+
+export async function postData() : Promise<TestItem | null> {
+  let data: TestItem = {
+    id: 0,
+    text: '',
+    updated_at: '',
+    created_at: ''
+  }
+  return apiClient.post<TestItemResponse>('test', {text: `sample text_${Math.ceil(Math.random() * 100)}`})
+      .then(res => {
+        const item: TestItemResponse = res.data
+        data = {...item}
+        console.log(data)
+        return data
+      }).catch(e => {
+        console.error(e)
+        return null
+      })
+}
+
+const Home:NextPage<Props>=(props)=>{
+  useEffect(() => {
+    getData()
+  },[])
   return (
     <>
       <Head>
@@ -15,6 +53,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={`${styles.main} ${inter.className}`}>
+        <h1 onClick={() => postData()}>ほげほげ</h1>
         <div className={styles.description}>
           <p>
             Get started by editing&nbsp;
@@ -112,3 +151,5 @@ export default function Home() {
     </>
   )
 }
+
+export default Home
